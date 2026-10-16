@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8">
+  <title>つもり貯金＆豪遊アプリ</title>
+  <style>
+    body {
+      font-family: sans-serif;
+      max-width: 480px;
+      margin: 40px auto;
+      padding: 0 16px;
+      color: #333;
+    }
+    .balance-box {
+      background: #f0f7ff;
+      border: 2px solid #0066cc;
+      border-radius: 8px;
+      text-align: center;
+      padding: 20px;
+      margin-bottom: 24px;
+    }
+    .balance {
+      font-size: 2.2rem;
+      font-weight: bold;
+      color: #0066cc;
+    }
+    .form-group {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    input {
+      flex: 1;
+      padding: 10px;
+      font-size: 1rem;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+    }
+    button {
+      padding: 10px 16px;
+      font-size: 1rem;
+      color: #fff;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+    }
+    .btn-save { background: #28a745; }
+    .btn-spend { background: #dc3545; }
+    .history {
+      margin-top: 24px;
+      list-style: none;
+      padding: 0;
+    }
+    .history li {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      border-bottom: 1px solid #eee;
+    }
+    .plus { color: #28a745; }
+    .minus { color: #dc3545; }
+  </style>
+</head>
+<body>
+
+  <div class="balance-box">
+    <div>豪遊可能プール金</div>
+    <div class="balance" id="balanceDisplay">¥0</div>
+  </div>
+
+  <div class="form-group">
+    <input type="text" id="memo" placeholder="理由（例: カフェ我慢、高級ディナー）">
+    <input type="number" id="amount" placeholder="金額 (円)">
+  </div>
+
+  <div class="form-group">
+    <button class="btn-save" style="flex:1" onclick="updateBalance('save')">我慢した！（貯める）</button>
+    <button class="btn-spend" style="flex:1" onclick="updateBalance('spend')">豪遊した！（使う）</button>
+  </div>
+
+  <ul class="history" id="historyList"></ul>
+
+  <script>
+    let data = JSON.parse(localStorage.getItem('goyuData')) || { balance: 0, logs: [] };
+
+    function render() {
+      document.getElementById('balanceDisplay').textContent = `¥${data.balance.toLocaleString()}`;
+      const list = document.getElementById('historyList');
+      list.innerHTML = '';
+      
+      data.logs.slice().reverse().forEach(log => {
+        const li = document.createElement('li');
+        const isSave = log.type === 'save';
+        li.innerHTML = `
+          <span>${log.memo}</span>
+          <span class="${isSave ? 'plus' : 'minus'}">
+            ${isSave ? '+' : '-'}¥${log.amount.toLocaleString()}
+          </span>
+        `;
+        list.appendChild(li);
+      });
+      localStorage.setItem('goyuData', JSON.stringify(data));
+    }
+
+    function updateBalance(type) {
+      const memoInput = document.getElementById('memo');
+      const amountInput = document.getElementById('amount');
+      const amount = parseInt(amountInput.value, 10);
+      const memo = memoInput.value.trim() || (type === 'save' ? '我慢' : '豪遊');
+
+      if (!amount || amount <= 0) return;
+
+      if (type === 'spend' && data.balance < amount) {
+        alert('豪遊資金が足りません！もっと我慢してから使いましょう。');
+        return;
+      }
+
+      if (type === 'save') {
+        data.balance += amount;
+      } else {
+        data.balance -= amount;
+      }
+
+      data.logs.push({ type, memo, amount, date: new Date().toISOString() });
+      memoInput.value = '';
+      amountInput.value = '';
+      render();
+    }
+
+    render();
+  </script>
+</body>
+</html>
