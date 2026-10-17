@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>note公開HTML作品一覧 | 小僧のブログ</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Noto+Sans+JP:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', 'Noto Sans JP', sans-serif;
+        }
+    </style>
+</head>
+<body class="bg-slate-50 text-slate-800 min-h-screen flex flex-col justify-between">
+
+    <!-- Header / Hero Section -->
+    <header class="bg-white border-b border-slate-200 shadow-sm">
+        <div class="max-w-4xl mx-auto px-6 py-12 text-center">
+            <span class="inline-block bg-indigo-50 text-indigo-600 text-xs font-semibold px-3 py-1 rounded-full uppercase tracking-wider mb-3">
+                note Blog Archive & Portfolio
+            </span>
+            <h1 class="text-3xl md:text-4xl font-bold text-slate-900 tracking-tight mb-4">
+                note公開HTML作品一覧
+            </h1>
+            <p class="text-slate-600 max-w-xl mx-auto text-base leading-relaxed">
+                noteブログで紹介している、ブラウザで動く自作ツールやミニアプリのまとめページです。作品は随時追加していきます！
+            </p>
+        </div>
+    </header>
+
+    <!-- Main Content: Project List Grid -->
+    <main class="max-w-4xl mx-auto px-6 py-12 flex-grow w-full">
+        <div class="flex items-center justify-between mb-6">
+            <h2 class="text-lg font-bold text-slate-900 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 11H5m14 0a2 2 0 012 2v6a2 2 0 01-2 2H5a2 2 0 01-2-2v-6a2 2 0 012-2m14 0V9a2 2 0 00-2-2M5 11V9a2 2 0 012-2m0 0V5a2 2 0 012-2h6a2 2 0 012 2v2M7 7h10"></path>
+                </svg>
+                公開中のツール・アプリ
+            </h2>
+            <span class="text-xs font-medium bg-emerald-50 text-emerald-700 px-2.5 py-1 rounded-full border border-emerald-100">全 1 件（随時追加中）</span>
+        </div>
+
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            
+            <!-- Project Card: つもり貯金シミュレーター -->
+            <div class="bg-white rounded-xl border border-slate-200 shadow-sm hover:shadow-md transition-all duration-200 flex flex-col justify-between overflow-hidden group">
+                <div class="p-6">
+                    <div class="flex items-center justify-between mb-3">
+                        <span class="bg-indigo-50 text-indigo-700 text-xs font-medium px-2.5 py-0.5 rounded">シミュレーター</span>
+                        <span class="text-xs text-slate-400">HTML / JS</span>
+                    </div>
+                    <h3 class="text-lg font-bold text-slate-900 group-hover:text-indigo-600 transition-colors mb-2">
+                        つもり貯金シミュレーター
+                    </h3>
+                    <p class="text-slate-600 text-sm leading-relaxed mb-4">
+                        日々のちょっとした節約や「つもり」を記録・可視化して、楽しく貯金を続けられるようにサポートするWebツールです。
+                    </p>
+                </div>
+                <div class="px-6 py-4 bg-slate-50 border-t border-slate-100 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3">
+                    <a href="./tsumoriTyokin.html" target="_blank" class="text-sm font-semibold text-indigo-600 hover:text-indigo-800 flex items-center gap-1">
+                        ツールを使ってみる
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14"></path>
+                        </svg>
+                    </a>
+                    <a href="https://note.com/soccersnowkozou/n/nb603a102503a" target="_blank" class="text-xs text-slate-600 hover:text-slate-900 bg-white border border-slate-200 hover:border-slate-300 px-3 py-1.5 rounded-lg transition-colors flex items-center gap-1">
+                        <span>📝</span> note解説記事を読む
+                    </a>
+                </div>
+            </div>
+
+            <!-- Coming Soon Card (Placeholder for future tools) -->
+            <div class="bg-slate-50/50 rounded-xl border border-dashed border-slate-300 p-6 flex flex-col items-center justify-center text-center">
+                <div class="w-10 h-10 rounded-full bg-slate-100 flex items-center justify-center text-slate-400 mb-3">
+                    <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"></path>
+                    </svg>
+                </div>
+                <h3 class="text-sm font-bold text-slate-700 mb-1">新しい作品を準備中</h3>
+                <p class="text-xs text-slate-500">今後も便利なHTMLツールやミニアプリを追加していく予定です。</p>
+            </div>
+
+        </div>
+    </main>
+
+    <!-- Footer -->
+    <footer class="bg-white border-t border-slate-200 mt-12 py-8 text-center text-sm text-slate-500">
+        <div class="max-w-4xl mx-auto px-6">
+            <p class="mb-1">Powered by note & GitHub Pages</p>
+            <p>&copy; 2026 小僧. All rights reserved.</p>
+        </div>
+    </footer>
+
+</body>
+</html>
