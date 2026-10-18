@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>防災サバイバルシミュレーション - 命を守る72時間</title>
+    <!-- Tailwind CSS CDN -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <style>
+        @keyframes shake {
+            0% { transform: translate(1px, 1px) rotate(0deg); }
+            10% { transform: translate(-1px, -2px) rotate(-1deg); }
+            20% { transform: translate(-3px, 0px) rotate(1deg); }
+            30% { transform: translate(3px, 2px) rotate(0deg); }
+            40% { transform: translate(1px, -1px) rotate(1deg); }
+            50% { transform: translate(-1px, 2px) rotate(-1deg); }
+            60% { transform: translate(-3px, 1px) rotate(0deg); }
+            70% { transform: translate(3px, 1px) rotate(-1deg); }
+            80% { transform: translate(-1px, -1px) rotate(1deg); }
+            90% { transform: translate(1px, 2px) rotate(0deg); }
+            100% { transform: translate(1px, -1px) rotate(0deg); }
+        }
+        .shake-animation {
+            animation: shake 0.5s;
+            animation-iteration-count: infinite;
+        }
+    </style>
+</head>
+<body class="bg-slate-900 text-slate-100 min-h-screen font-sans antialiased flex flex-col justify-between">
+    <!-- ヘッダー -->
+    <header class="bg-slate-800 border-b border-slate-700 py-4 px-6 shadow-md">
+        <div class="max-w-3xl mx-auto flex justify-between items-center">
+            <h1 class="text-xl font-bold tracking-wider flex items-center gap-2">
+                <span class="text-red-500">🚨</span> 防災サバイバルシミュレーション <span class="text-xs bg-red-600 px-2 py-0.5 rounded text-white">72時間の壁</span>
+            </h1>
+            <button id="reset-btn" onclick="resetData()" class="text-xs bg-slate-700 hover:bg-red-700 text-slate-300 hover:text-white px-3 py-1.5 rounded transition font-medium border border-slate-600">
+                データをリセット
+            </button>
+        </div>
+    </header>
+
+    <!-- メインコンテンツ -->
+    <main class="max-w-3xl w-full mx-auto p-4 md:p-6 flex-grow flex flex-col justify-center">
+        <div id="app" class="bg-slate-800 border border-slate-700 rounded-xl p-6 shadow-2xl relative overflow-hidden">
+            <!-- 動的描画エリア -->
+        </div>
+    </main>
+
+    <!-- フッター -->
+    <footer class="bg-slate-800 border-t border-slate-700 py-4 px-6 text-center text-xs text-slate-400">
+        <p>出典：noteプロンプト「【39Days】命を守る72時間を疑似体験する防災サバイバルシミュレーション」</p>
+        <p class="mt-1">公的防災情報：<a href="https://www.kantei.go.jp/jp/headline/bousai/sonae.html" target="_blank" class="text-blue-400 hover:underline">首相官邸（災害に対するご家庭での備え）</a> | <a href="https://www.bousai.metro.tokyo.lg.jp/" target="_blank" class="text-blue-400 hover:underline">東京都防災ホームページ</a></p>
+    </footer>
+
+    <script>
+        // シナリオデータ（全5フェーズ）
+        const phases = [
+            {
+                id: 1,
+                title: "【フェーズ1：発災直後（0〜30分）】",
+                subtitle: "室内の安全確保、足元防護、火災・閉じ込め防止",
+                situation: "マグニチュード7クラスの強い揺れが突如発生！ガタガタと激しい揺れで家具が音を立てて移動し、ガラスが割れる音が響いています。電気も一瞬で消え、足元にはガラス片や落下物が散乱し始めています。",
+                choices: [
+                    {
+                        text: "揺れが収まるのを待たず、すぐに玄関のドアを開けて避難経路を確保しつつ、スリッパを履いて身を低くする。",
+                        isCorrect: false,
+                        score: 5,
+                        merit: "避難経路の確保を急ごうとする意識",
+                        risk: "【NGリスク】激しい揺れの最中に移動すると、転倒してガラス片で大怪我をしたり、ドア枠が歪んで閉じ込められる原因になります。また靴を履かずにスリッパだとガラス片を貫通する恐れがあります。",
+                        advice: "まずは頑丈な机の下などに隠れ、頭部を守る「ダンゴムシのポーズ」で揺れが完全に収まるのを待ちます。移動は揺れが収まってから！"
+                    },
+                    {
+                        text: "その場で体勢を低くして頭部を守り、揺れが収まるのを待ってから、靴（スニーカー）と厚手の靴下を履き、火元確認とブレーカーの確認を行う。",
+                        isCorrect: true,
+                        score: 20,
+                        merit: "致命的な怪我を防ぎ、二次災害（火災・通電火災）を未然に防止できる最善の選択。",
+                        risk: "特になし。冷静で理想的な初動対応です。",
+                        advice: "発災直後の最優先事項は「自分の命を守る（怪我をしないこと）」です。ガラス片から足を守るスニーカーの着用は鉄則です。"
+                    },
+                    {
+                        text: "すぐにスマホを手に取り、SNSやニュース速報を開いて地震の震度や被害状況の最新情報を確認する。",
+                        isCorrect: false,
+                        score: 10,
+                        merit: "情報を早く得ようとする行動",
+                        risk: "【NGリスク】揺れの最中にスマホ操作や情報収集に気を取られると、落下物への対応が遅れ、身を守るのが疎かになります。",
+                        advice: "情報収集よりもまず「身の安全の確保」と「負傷防止」が先決です。情報は揺れが収まってから集めましょう。"
+                    }
+                ]
+            },
+            {
+                id: 2,
+                title: "【フェーズ2：初日・昼〜夕方（数時間後）】",
+                subtitle: "家族の安否確認、情報収集、生活インフラ確認",
+                situation: "揺れは収まりましたが、ライフラインはすべて停止（停電・断水）。ガスも止まっています。設定した家族や同居人とは現在離れており、安否が気にかかります。",
+                choices: [
+                    {
+                        text: "すぐに自宅を飛び出し、家族がいる場所へ向けて歩いて迎えに行ったり、状況を確認しに出発する。",
+                        isCorrect: false,
+                        score: 5,
+                        merit: "家族を心配する気持ちからの行動",
+                        risk: "【NGリスク】余震によるブロック塀の倒壊、看板の落下、道路の陥没などの二次災害に巻き込まれる危険が極めて高いです。",
+                        advice: "発災直後の移動は原則危険です。安否確認は災害用伝言ダイヤル（171）やSNSの災害用伝言板を使いましょう。"
+                    },
+                    {
+                        text: "携帯電話の災害用伝言ダイヤル（171）やWeb伝言板（web171）にメッセージを残し、ラジオやバッテリー式の情報端末で公的な避難・被害情報を確認する。",
+                        isCorrect: true,
+                        score: 20,
+                        merit: "二次災害のリスクを避けつつ、確実な安否確認と正確な情報収集ができる。",
+                        risk: "特になし。非常に冷静で的確な判断です。",
+                        advice: "回線が混雑する中、直接電話をかけるのはNG。伝言サービスやSNSの活用が家族の命をつなぎます。"
+                    },
+                    {
+                        text: "トイレに行きたくなったため、普段通りに水洗トイレのレバーを回して流そうとする。",
+                        isCorrect: false,
+                        score: 5,
+                        merit: "衛生面を保とうとする意識",
+                        risk: "【NGリスク】断水時にレバーを回すと、排水管が破損していた場合に汚水が逆流し、下階への漏水や室内汚染を引き起こします。",
+                        advice: "断水時は水洗トイレを絶対に使ってはいけません。携帯トイレや簡易トイレを使いましょう。"
+                    }
+                ]
+            },
+            {
+                id: 3,
+                title: "【フェーズ3：初日の夜（12時間後）】",
+                subtitle: "余震への警戒、明かりの確保、就寝環境の整備",
+                situation: "夜を迎え、周囲は完全な闇に包まれています。時折、余震がガタガタと揺れを起こし、不安が増します。部屋の中も散乱しており、暗闇の中での移動や就寝には危険が伴います。",
+                choices: [
+                    {
+                        text: "ロウソクやアロマキャンドルに火を灯し、温かみのある明かりの中でリラックスしながら夜を過ごす。",
+                        isCorrect: false,
+                        score: 0,
+                        merit: "精神的なリラックス効果",
+                        risk: "【NGリスク】余震で地震が起きた際、ロウソクが簡単に転倒し、カーテンやじゅうたん、散乱した紙類に燃え移って大火災（二次災害）を引き起こす最大の原因になります。",
+                        advice: "被災時の夜間に火気の使用は厳禁です。懐中電灯やランタン、LEDライト等を使いましょう。"
+                    },
+                    {
+                        text: "懐中電灯やランタンを活用し、足元の危険物を片付けた上で、ヘルメットや靴を備えた状態で就寝する。",
+                        isCorrect: true,
+                        score: 20,
+                        merit: "火災リスクを排除しつつ、夜間の突然の余震にも即座に対応できる安全な就寝環境。",
+                        risk: "特になし。安全管理が行き届いています。",
+                        advice: "就寝中も予期せぬ余震やガラスの散乱に備え、枕元にスニーカー、ヘルメット、懐中電灯をセットしておくのが鉄則です。"
+                    },
+                    {
+                        text: "スマホのバッテリーが減るのを極度に恐れ、明かりを一切つけずに真っ暗な部屋のまま寝る。",
+                        isCorrect: false,
+                        score: 10,
+                        merit: "バッテリーの節約",
+                        risk: "【NGリスク】真っ暗な状態で夜中に余震や避難が必要になった際、散乱したガラス片や家具で大怪我をしたり、避難遅れにつながります。",
+                        advice: "バッテリー消費は懸念点ですが、足元の安全確保と最低限の光源の確保は命を守るために必須です。"
+                    }
+                ]
+            },
+            {
+                id: 4,
+                title: "【フェーズ4：2日目（24〜48時間）】",
+                subtitle: "食料・水の配分、衛生管理、デマ情報の見極め",
+                situation: "被災から1日以上が経過しました。備蓄の消費が始まり、トイレの処理やゴミ・臭い問題、SNSでの不穏なデマ情報が飛び交い、精神的・衛生的なストレスがピークに達しつつあります。",
+                choices: [
+                    {
+                        text: "SNSで流れてきた「〇〇で大量の水が無料配布されている」という真偽不明の情報を信じ、確認もせずすぐに現地へ向かう。",
+                        isCorrect: false,
+                        score: 5,
+                        merit: "物資を手に入れようとする行動",
+                        risk: "【NGリスク】災害時は悪質なデマやフェイクニュースが拡散されやすく、体力や貴重な飲料水を無駄に消費し、危険な場所へ向かってしまうリスクがあります。",
+                        advice: "情報は自治体公式サイトや公的メディアで必ずクロスチェックしましょう。"
+                    },
+                    {
+                        text: "備蓄の水分・食料を計画的に配分し、簡易トイレの凝固剤と防臭袋を使って衛生的に排泄物を処理し、ゴミ袋を二重にして密閉する。",
+                        isCorrect: true,
+                        score: 20,
+                        merit: "脱水症状や栄養失調を防ぎ、感染症リスクや悪臭を完全にシャットアウトできる。",
+                        risk: "特になし。極めて衛生面とサバイバル管理に優れた行動です。",
+                        advice: "災害時の最大の隠れた敵は「衛生悪化による感染症」です。トイレの処理とゴミの密閉管理は健康維持の要です。"
+                    },
+                    {
+                        text: "水道が使えないので、我慢して水分摂取を極力控え、トイレに行く回数を減らそうとする。",
+                        isCorrect: false,
+                        score: 0,
+                        merit: "トイレや水分の節約のつもり",
+                        risk: "【NGリスク】水分を控えると、エコノミークラス症候群や熱中症、脱水症状を引き起こし、命に関わる深刻な健康被害を招きます。",
+                        advice: "水分の節約は命を削ります。こまめな水分補給はサバイバルにおいて絶対に欠かせません。"
+                    }
+                ]
+            },
+            {
+                id: 5,
+                title: "【フェーズ5：3日目（48〜72時間）】",
+                subtitle: "備蓄の枯渇への備え、体調維持、外部救援・地域連携",
+                situation: "「72時間の壁」の最終局面です。公的な救助活動や給水車が徐々に動き出していますが、心身ともに疲労が蓄積し、蓄えていた水や食料も底をつきかけています。",
+                choices: [
+                    {
+                        text: "完全に物資がゼロになるまで誰にも相談せず、一人で耐え忍んで救助を待ち続ける。",
+                        isCorrect: false,
+                        score: 5,
+                        merit: "他人に迷惑をかけまいとする忍耐力",
+                        risk: "【NGリスク】限界を超えて孤立すると、低栄養や脱水、精神的追い詰めによるパニックを引き起こします。",
+                        advice: "孤立は危険です。近隣住民と声を掛け合い（共助）、自治体の給水所や炊き出しの情報を確認しましょう。"
+                    },
+                    {
+                        text: "近所の方と安否や情報を共有し合い（共助）、自治体が開設した給水所や炊き出し、避難所の情報を確認して必要な支援を受ける。",
+                        isCorrect: true,
+                        score: 20,
+                        merit: "地域コミュニティの力（共助）を活かし、物資の確保と精神的安定を得られる。",
+                        risk: "特になし。理想的な防災の最終着地です。",
+                        advice: "発災後72時間を過ぎると「公助」が本格化します。周囲と連携し、助け合いながら生活再建への第一歩を踏み出しましょう。"
+                    },
+                    {
+                        text: "自宅の備蓄が尽きたため、近所の空き家や商店のシャッターを破って食料や飲料水を調達する。",
+                        isCorrect: false,
+                        score: 0,
+                        merit: "食料を手に入れる手段",
+                        risk: "【NGリスク】窃盗・略奪行為にあたり、法的な処罰の対象となるだけでなく、地域社会での信頼を失います。",
+                        advice: "いかに切羽詰まっていても違法行為は絶対にNGです。公的な配給や炊き出し、避難所を活用しましょう。"
+                    }
+                ]
+            }
+        ];
+
+        // アプリの状態管理
+        let gameState = {
+            step: 'input',
+            userConfig: {
+                location: '自宅（マンション中層階）',
+                people: '家族3人',
+                placeType: '都市部の住宅街・室内',
+                condition: '一般的な備蓄（水・非常食が数日分）あり',
+                customText: ''
+            },
+            currentPhaseIndex: 0,
+            totalScore: 0,
+            history: []
+        };
+
+        // ローカルストレージから状態を復元
+        function loadState() {
+            const saved = localStorage.getItem('bousai_game_state');
+            if (saved) {
+                try {
+                    gameState = JSON.parse(saved);
+                } catch (e) {
+                    console.error('Failed to parse saved state', e);
+                }
+            }
+            render();
+        }
+
+        // 状態をローカルストレージに保存
+        function saveState() {
+            localStorage.setItem('bousai_game_state', JSON.stringify(gameState));
+        }
+
+        // データをリセット（初期画面へ完全に戻す）
+        function resetData() {
+            if (confirm('シミュレーションのデータをリセットして、最初（状況の入力）からやり直しますか？')) {
+                localStorage.removeItem('bousai_game_state');
+                gameState = {
+                    step: 'input',
+                    userConfig: {
+                        location: '自宅（マンション中層階）',
+                        people: '家族3人',
+                        placeType: '都市部の住宅街・室内',
+                        condition: '一般的な備蓄（水・非常食が数日分）あり',
+                        customText: ''
+                    },
+                    currentPhaseIndex: 0,
+                    totalScore: 0,
+                    history: []
+                };
+                // フェーズの選択状態もリセット
+                phases.forEach(p => {
+                    p.selectedChoice = null;
+                    p.selectedChoiceIndex = null;
+                    p.shuffledChoices = null;
+                });
+                render();
+            }
+        }
+
+        // 画面描画ルーター
+        function render() {
+            const app = document.getElementById('app');
+            if (gameState.step === 'input') {
+                app.innerHTML = renderInputScreen();
+            } else if (gameState.step === 'playing') {
+                app.innerHTML = renderPlayingScreen();
+            } else if (gameState.step === 'result') {
+                app.innerHTML = renderResultScreen();
+            }
+        }
+
+        // 1. 初期ヒアリング画面のHTML
+        function renderInputScreen() {
+            return `
+                <div class="space-y-6">
+                    <div class="border-b border-slate-700 pb-4">
+                        <h2 class="text-xl font-bold text-red-400 flex items-center gap-2">
+                            <span>🏠</span> あなたの被災環境設定
+                        </h2>
+                        <p class="text-sm text-slate-300 mt-1">
+                            リアルなシミュレーションを行うため、現在のあなたのおおまかな状況を選択・入力してください。
+                        </p>
+                    </div>
+
+                    <form id="config-form" onsubmit="startSimulation(event)" class="space-y-4">
+                        <div>
+                            <label class="block text-sm font-medium text-slate-200 mb-1">① 今どこで、どのような場所にいますか？</label>
+                            <select id="cfg-location" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 text-sm focus:ring-2 focus:ring-red-500">
+                                <option value="自宅（戸建て）" ${gameState.userConfig.location === '自宅（戸建て）' ? 'selected' : ''}>自宅（戸建て）</option>
+                                <option value="自宅（マンション中・高層階）" ${gameState.userConfig.location === '自宅（マンション中・高層階）' ? 'selected' : ''}>自宅（マンション中・高層階）</option>
+                                <option value="職場・オフィスビル" ${gameState.userConfig.location === '職場・オフィスビル' ? 'selected' : ''}>職場・オフィスビル</option>
+                                <option value="外出先（街中・駅周辺）" ${gameState.userConfig.location === '外出先（街中・駅周辺）' ? 'selected' : ''}>外出先（街中・駅周辺）</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-200 mb-1">② 誰と一緒ですか？</label>
+                            <select id="cfg-people" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 text-sm focus:ring-2 focus:ring-red-500">
+                                <option value="一人（単身）" ${gameState.userConfig.people === '一人（単身）' ? 'selected' : ''}>一人（単身）</option>
+                                <option value="家族（子供や配偶者）と一緒" ${gameState.userConfig.people === '家族（子供や配偶者）と一緒' ? 'selected' : ''}>家族（子供や配偶者）と一緒</option>
+                                <option value="家族とは離れている" ${gameState.userConfig.people === '家族とは離れている' ? 'selected' : ''}>家族とは離れている（一人で被災）</option>
+                                <option value="同僚・知人と一緒" ${gameState.userConfig.people === '同僚・知人と一緒' ? 'selected' : ''}>同僚・知人と一緒</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-200 mb-1">③ 現在の状態・備蓄の状況は？</label>
+                            <select id="cfg-condition" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 text-sm focus:ring-2 focus:ring-red-500">
+                                <option value="水・食料・防災グッズの備蓄が数日分ある" ${gameState.userConfig.condition.includes('数日分') ? 'selected' : ''}>水・食料・防災グッズの備蓄が数日分ある</option>
+                                <option value="ほとんど備蓄がない状態" ${gameState.userConfig.condition.includes('ほとんど') ? 'selected' : ''}>ほとんど備蓄がない状態</option>
+                                <option value="十分な防災対策と備蓄（1週間分以上）がある" ${gameState.userConfig.condition.includes('1週間分') ? 'selected' : ''}>十分な防災対策と備蓄（1週間分以上）がある</option>
+                            </select>
+                        </div>
+
+                        <div>
+                            <label class="block text-sm font-medium text-slate-200 mb-1">④ カスタムメモ（任意：気になることや追加したい状況など）</label>
+                            <input type="text" id="cfg-custom" value="${gameState.userConfig.customText || ''}" placeholder="例：ペットがいる、足が少し悪い、など" class="w-full bg-slate-900 border border-slate-700 rounded-lg p-2.5 text-slate-100 text-sm focus:ring-2 focus:ring-red-500">
+                        </div>
+
+                        <div class="pt-4">
+                            <button type="submit" class="w-full bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-500 hover:to-orange-500 text-white font-bold py-3 px-6 rounded-xl shadow-lg transition transform active:scale-95 flex items-center justify-center gap-2 text-base">
+                                <span>🚨</span> サバイバルシミュレーションを開始する
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            `;
+        }
+
+        function startSimulation(e) {
+            e.preventDefault();
+            gameState.userConfig.location = document.getElementById('cfg-location').value;
+            gameState.userConfig.people = document.getElementById('cfg-people').value;
+            gameState.userConfig.condition = document.getElementById('cfg-condition').value;
+            gameState.userConfig.customText = document.getElementById('cfg-custom').value;
+
+            gameState.step = 'playing';
+            gameState.currentPhaseIndex = 0;
+            gameState.totalScore = 0;
+            gameState.history = [];
+            
+            // 各フェーズのリセット
+            phases.forEach(p => {
+                p.selectedChoice = null;
+                p.selectedChoiceIndex = null;
+                p.shuffledChoices = null;
+            });
+
+            saveState();
+            render();
+            triggerShake();
+        }
+
+        function triggerShake() {
+            const app = document.getElementById('app');
+            app.classList.add('shake-animation');
+            setTimeout(() => {
+                app.classList.remove('shake-animation');
+            }, 600);
+        }
+
+        // 2. プレイ中画面のHTML
+        function renderPlayingScreen() {
+            const phase = phases[gameState.currentPhaseIndex];
+            if (!phase.selectedChoice) {
+                if (!phase.shuffledChoices) {
+                    let indices = [0, 1, 2];
+                    for (let i = indices.length - 1; i > 0; i--) {
+                        const j = Math.floor(Math.random() * (i + 1));
+                        [indices[i], indices[j]] = [indices[j], indices[i]];
+                    }
+                    phase.shuffledChoices = indices;
+                }
+
+                const labels = ['A', 'B', 'C'];
+                let choicesHtml = '';
+                phase.shuffledChoices.forEach((origIdx, displayIdx) => {
+                    const choice = phase.choices[origIdx];
+                    choicesHtml += `
+                        <button onclick="answerChoice(${origIdx})" class="w-full text-left bg-slate-700 hover:bg-slate-600 border border-slate-600 rounded-xl p-4 transition shadow flex items-start gap-3 group">
+                            <span class="bg-red-600 text-white font-bold px-3 py-1 rounded-lg text-sm flex-shrink-0 group-hover:bg-red-500">${labels[displayIdx]}</span>
+                            <span class="text-sm md:text-base text-slate-100 leading-relaxed">${choice.text}</span>
+                        </button>
+                    `;
+                });
+
+                return `
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                            <span class="text-xs bg-red-900/60 text-red-300 border border-red-700 px-2.5 py-1 rounded-full font-semibold">フェーズ ${phase.id} / 5</span>
+                            <span class="text-xs text-slate-400">現在地: ${gameState.userConfig.location}</span>
+                        </div>
+
+                        <div>
+                            <h2 class="text-lg md:text-xl font-bold text-red-400">${phase.title}</h2>
+                            <p class="text-xs text-slate-400 mt-0.5">${phase.subtitle}</p>
+                        </div>
+
+                        <div class="bg-slate-900/80 border border-slate-700/80 rounded-xl p-4 text-sm md:text-base text-slate-200 leading-relaxed space-y-2">
+                            <p>${phase.situation}</p>
+                            <p class="text-xs text-amber-300/90 italic pt-1">💡 あなたの状況（${gameState.userConfig.people} / 状態: ${gameState.userConfig.condition}）を踏まえて最も適切な行動を選択してください。</p>
+                        </div>
+
+                        <div class="space-y-3">
+                            <p class="text-xs font-semibold text-slate-400 uppercase tracking-wider">あなたの行動を選択してください（3択）:</p>
+                            ${choicesHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                const selected = phase.choices[phase.selectedChoiceIndex];
+                const isCorrect = selected.isCorrect;
+
+                return `
+                    <div class="space-y-6">
+                        <div class="flex justify-between items-center border-b border-slate-700 pb-3">
+                            <span class="text-xs bg-red-900/60 text-red-300 border border-red-700 px-2.5 py-1 rounded-full font-semibold">フェーズ ${phase.id} / 5 判定結果</span>
+                            <span class="text-xs text-slate-400">獲得スコア: ${selected.score}点</span>
+                        </div>
+
+                        <div class="p-4 rounded-xl border ${isCorrect ? 'bg-emerald-950/40 border-emerald-600/50' : 'bg-red-950/40 border-red-600/50'}">
+                            <div class="flex items-center gap-2 mb-2">
+                                <span class="text-xl">${isCorrect ? '⭕' : '❌'}</span>
+                                <h3 class="font-bold text-base ${isCorrect ? 'text-emerald-400' : 'text-red-400'}">
+                                    ${isCorrect ? '正解！的確な判断です' : '危険な選択です（NGトラップ）'}
+                                </h3>
+                            </div>
+                            <p class="text-sm text-slate-200 font-medium mb-3">選んだ行動：${selected.text}</p>
+                            
+                            <div class="space-y-2 text-xs md:text-sm pt-2 border-t border-slate-700/60">
+                                <p class="text-slate-300"><strong class="text-emerald-400">メリット・評価:</strong> ${selected.merit}</p>
+                                <p class="text-slate-300"><strong class="text-red-400">潜むリスク（NG要因）:</strong> ${selected.risk}</p>
+                                <p class="text-slate-300 bg-slate-900/60 p-3 rounded-lg mt-2 border border-slate-700"><strong class="text-amber-300">防災トレーナーの教訓:</strong> ${selected.advice}</p>
+                            </div>
+                        </div>
+
+                        <button onclick="nextPhase()" class="w-full bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-6 rounded-xl shadow transition text-center text-sm md:text-base border border-slate-600 flex items-center justify-center gap-2">
+                            <span>➡️</span> 次のフェーズへ進む
+                        </button>
+                    </div>
+                `;
+            }
+        }
+
+        function answerChoice(origIdx) {
+            const phase = phases[gameState.currentPhaseIndex];
+            phase.selectedChoiceIndex = origIdx;
+            phase.selectedChoice = phase.choices[origIdx];
+            gameState.totalScore += phase.selectedChoice.score;
+            saveState();
+            render();
+        }
+
+        function nextPhase() {
+            gameState.currentPhaseIndex++;
+            if (gameState.currentPhaseIndex >= phases.length) {
+                gameState.step = 'result';
+            }
+            saveState();
+            render();
+        }
+
+        // 3. 最終結果画面のHTML
+        function renderResultScreen() {
+            let rankTitle = '';
+            let rankDesc = '';
+            const score = gameState.totalScore;
+
+            if (score >= 90) {
+                rankTitle = '🏆 サバイバルマスター（極めて高い生存力）';
+                rankDesc = '素晴らしい判断力です！二次災害のリスクを正確に見抜き、自身の命と周囲の安全をしっかりと守り抜くことができます。';
+            } else if (score >= 70) {
+                rankTitle = '🛡️ 防災セーフティリーダー（十分な生存力）';
+                rankDesc = '全体を通して冷静な判断ができています。いくつかのNGトラップに注意すれば、72時間を十分に生き抜くことができます。';
+            } else if (score >= 40) {
+                rankTitle = '⚠️ 要・防災見直しレベル（注意が必要）';
+                rankDesc = 'いくつかの選択で二次災害のリスクやNG行動を踏んでしまいました。「知っている」から「動ける」への意識改革と備えの再確認がおすすめです。';
+            } else {
+                rankTitle = '🚨 危険信号：命を守る見直しが急務';
+                rankDesc = 'パニック状態でのNG行動が多く見られました。発災時の行動手順や通信・トイレ・火災対策について、今一度ご家族と確認しましょう。';
+            }
+
+            return `
+                <div class="space-y-6 text-center">
+                    <div class="border-b border-slate-700 pb-4">
+                        <span class="text-xs bg-red-900/60 text-red-300 border border-red-700 px-3 py-1 rounded-full font-semibold">72時間サバイバル訓練 終了</span>
+                        <h2 class="text-2xl font-bold text-slate-100 mt-2">総合生存力スコア</h2>
+                        <div class="text-5xl font-black text-red-500 my-3">${score} <span class="text-lg text-slate-400">/ 100点</span></div>
+                    </div>
+
+                    <div class="bg-slate-900/80 border border-slate-700 p-5 rounded-xl text-left space-y-3">
+                        <h3 class="font-bold text-amber-400 text-base">${rankTitle}</h3>
+                        <p class="text-sm text-slate-300 leading-relaxed">${rankDesc}</p>
+                        <div class="text-xs text-slate-400 pt-2 border-t border-slate-700/60 space-y-1">
+                            <p><strong>あなたの設定：</strong> ${gameState.userConfig.location} / ${gameState.userConfig.people} / 状態: ${gameState.userConfig.condition}</p>
+                        </div>
+                    </div>
+
+                    <div class="flex flex-col sm:flex-row gap-3 pt-2">
+                        <button onclick="copyResult()" class="flex-1 bg-slate-700 hover:bg-slate-600 text-white font-bold py-3 px-4 rounded-xl shadow transition text-sm border border-slate-600 flex items-center justify-center gap-2">
+                            <span>📋</span> 結果をクリップボードにコピー
+                        </button>
+                        <button onclick="resetData()" class="flex-1 bg-red-600 hover:bg-red-500 text-white font-bold py-3 px-4 rounded-xl shadow transition text-sm flex items-center justify-center gap-2">
+                            <span>🔄</span> 最初からやり直す
+                        </button>
+                    </div>
+
+                    <div class="pt-4 border-t border-slate-700 text-left text-xs text-slate-400 space-y-2">
+                        <p class="font-semibold text-slate-300">📚 公的な防災情報の確認・参考リンク:</p>
+                        <ul class="list-disc pl-5 space-y-1">
+                            <li><a href="https://www.kantei.go.jp/jp/headline/bousai/sonae.html" target="_blank" class="text-blue-400 hover:underline">首相官邸 - 災害に対するご家庭での備え</a></li>
+                            <li><a href="https://www.bousai.metro.tokyo.lg.jp/" target="_blank" class="text-blue-400 hover:underline">東京都防災ホームページ（東京防災など）</a></li>
+                            <li><a href="https://www.jma.go.jp/jma/index.html" target="_blank" class="text-blue-400 hover:underline">気象庁 - 防災情報・地震情報</a></li>
+                        </ul>
+                    </div>
+                </div>
+            `;
+        }
+
+        function copyResult() {
+            const text = `【防災サバイバルシミュレーション結果】\n総合スコア: ${gameState.totalScore}/100点\n環境: ${gameState.userConfig.location} / ${gameState.userConfig.people}\n#防災 #72時間の壁 #サバイバルシミュレーション`;
+            navigator.clipboard.writeText(text).then(() => {
+                alert('結果をクリップボードにコピーしました！');
+            });
+        }
+
+        // ページロード時
+        window.addEventListener('DOMContentLoaded', () => {
+            loadState();
+        });
+    </script>
+</body>
+</html>
